@@ -18,6 +18,7 @@ namespace ZeroInference.Core.Graph
         FusedLinearRelu,
         Add,
         Flatten,
-        Softmax
+        Softmax,
+        MultiHeadAttention
     }
 }
