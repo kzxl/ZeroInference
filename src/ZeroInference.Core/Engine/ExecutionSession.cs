@@ -9,7 +9,7 @@ namespace ZeroInference.Core.Engine
     /// Thread-safe execution session for an optimized InferenceGraph.
     /// Manages pre-allocated static tensor arena for allocation-free inference loops.
     /// </summary>
-    public sealed class ExecutionSession
+    public sealed class ExecutionSession : IInferenceSession
     {
         private readonly InferenceGraph _graph;
         private readonly List<InferenceNode> _executionOrder;
@@ -19,6 +19,8 @@ namespace ZeroInference.Core.Engine
 
         public InferenceGraph Graph => _graph;
         public MemoryPlan MemoryPlan => _memoryPlan;
+        public IReadOnlyList<string> InputNames => _graph.InputNames;
+        public IReadOnlyList<string> OutputNames => _graph.OutputNames;
 
         public ExecutionSession(InferenceGraph graph, int arenaSlotCapacity = 2 * 1024 * 1024)
         {
@@ -433,6 +435,14 @@ namespace ZeroInference.Core.Engine
             }
 
             return new Tensor<float>(shape);
+        }
+
+        /// <summary>
+        /// Disposes any session resources. No-op for managed CPU memory arena.
+        /// </summary>
+        public void Dispose()
+        {
+            // Pure C# managed arena requires no unmanaged cleanup
         }
     }
 }
