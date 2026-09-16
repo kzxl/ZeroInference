@@ -4,7 +4,7 @@
 [![.NET Multi-Targeting](https://img.shields.io/badge/.NET-8.0%20%7C%204.6.2%20%7C%20Standard%202.0-purple.svg)](https://dotnet.microsoft.com/)
 [![ONNX Support](https://img.shields.io/badge/Model-Pure%20C%23%20ONNX%20Parser-orange.svg)]()
 [![Zero External Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20C%23)-brightgreen.svg)]()
-[![NuGet Version](https://img.shields.io/badge/NuGet-1.0.0-blue.svg)](https://www.nuget.org/packages/ZeroInference.Core)
+[![NuGet Version](https://img.shields.io/badge/NuGet-1.1.0-blue.svg)](https://www.nuget.org/packages/ZeroInference.Core)
 
 **ZeroInference** is a pure C# ONNX deep learning inference engine and model runtime for .NET with **zero external dependencies**. It eliminates bulky native C++ runtime binaries (no ONNX Runtime native DLLs, no OpenVINO, no Python dependencies), reading and evaluating `.onnx` and `.zeromodel` neural graphs directly in memory with SIMD vectorization and int8 quantization.
 
@@ -12,7 +12,9 @@
 
 ## 🌟 Key Capabilities
 
+- **Polymorphic Micro-Kernel (`IInferenceSession`)**: Unified inference contract allowing seamless zero-downtime switching between Pure C# execution and native hardware accelerators (DirectML / ONNX Runtime).
 - **Zero Dependency Pure C# Runtime**: No native shared libraries (`onnxruntime.dll`, `libonnxruntime.so`) required. Runs anywhere .NET runs.
+- **Local LLM Streaming (`LocalLlmStreamClient`)**: High-throughput SSE token streaming client for Ollama, OpenAI, and local edge LLM endpoints.
 - **Direct ONNX Model Parser**: Stack-allocated Protocol Buffers wire reader (`ProtobufWireReader`) parsing ONNX binary graphs directly into executable compute graphs.
 - **Compact `.zeromodel` Serialization**: Fast binary serialization format with pre-compiled layer topologies and optimized weights layout.
 - **Supported Deep Learning Layers**:
@@ -88,6 +90,15 @@ Tested on MobileNet-V2 / ResNet-18 (Release x64):
 | **MobileNet-V2** | $14.2 \text{ MB}$ | $18.4 \text{ ms}$ | $12.1 \text{ ms}$ | **0 (Pure C#)** |
 | **ResNet-18 (FP32)** | $45.1 \text{ MB}$ | $42.0 \text{ ms}$ | $28.5 \text{ ms}$ | **0 (Pure C#)** |
 | **ResNet-18 (Int8)** | **$11.3 \text{ MB}$** | **$12.5 \text{ ms}$** | **$9.4 \text{ ms}$** | **0 (Pure C#)** |
+
+---
+
+## 📜 Release History
+
+| Version | Release Date | Key Milestones & Highlights |
+| :--- | :---: | :--- |
+| **`v1.1.0`** | 2026-09-16 | **Polymorphic Micro-Kernel & Local LLM Streaming**:<br/>• Introduced `IInferenceSession` unified execution contract decoupling high-level apps from backends.<br/>• Added `ZeroInference.Providers.OnnxRuntime` provider bridging Microsoft.ML.OnnxRuntime with pure C# pipeline.<br/>• Added `LocalLlmStreamClient` supporting real-time SSE streaming for Ollama & OpenAI-compatible endpoints.<br/>• Verified with 23 unit tests across Core & Provider test suites. |
+| **`v1.0.0`** | 2026-09-09 | **Initial Sovereign Release**:<br/>• Pure C# ONNX protobuf wire reader & layer fusion pipeline.<br/>• Conv2D, Dense, BatchNorm, LayerNorm, activations, and pooling.<br/>• Int8 quantization engine & Non-Maximum Suppression (NMS). |
 
 ---
 
