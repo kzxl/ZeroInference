@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ZeroInference.Core\ZeroInference.Core.csproj" />
-    <PackageReference Include="ZeroTensor.Core" Version="1.0.0" />
+    <PackageReference Include="ZeroTensor.Core" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
