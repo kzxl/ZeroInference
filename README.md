@@ -5,8 +5,8 @@
 [![.NET Multi-Targeting](https://img.shields.io/badge/.NET-8.0%20%7C%204.6.2%20%7C%20Standard%202.0-purple.svg)](https://dotnet.microsoft.com/)
 [![ONNX Support](https://img.shields.io/badge/Model-Pure%20C%23%20ONNX%20Parser-orange.svg)]()
 [![Zero External Dependencies](https://img.shields.io/badge/Dependencies-0%20(Pure%20C%23)-brightgreen.svg)]()
-[![NuGet Version](https://img.shields.io/badge/nuget-v1.3.1-blue.svg)](https://www.nuget.org/packages/ZeroInference.Core)
-[![Tests: 24 Passed](https://img.shields.io/badge/Tests-24%20Passed%20(100%25)-brightgreen.svg)]()
+[![NuGet Version](https://img.shields.io/badge/nuget-v1.5.0-blue.svg)](https://www.nuget.org/packages/ZeroInference.Core)
+[![Tests: Passed](https://img.shields.io/badge/Tests-Passed%20(100%25)-brightgreen.svg)]()
 
 **ZeroInference** is a pure C# ONNX deep learning inference engine and model runtime for .NET with **zero external dependencies**. It eliminates bulky native C++ runtime binaries (no ONNX Runtime native DLLs, no OpenVINO, no Python dependencies), reading and evaluating `.onnx` and `.zeromodel` neural graphs directly in memory with SIMD vectorization and int8 quantization.
 
@@ -14,6 +14,10 @@
 
 ## 🌟 Key Capabilities
 
+- **Transformer & LLM Operators**:
+  - **Rotary Position Embedding (`RotaryEmbedding`)**: High-performance RoPE with precomputed trigonometric tables and in-place complex rotation for modern LLMs (LLaMA, Mistral, Qwen).
+  - **FlashAttention-2 Kernel (`FlashAttentionKernel`)**: CPU cache-tiled online Softmax algorithm computing scaled dot-product attention in $O(1)$ memory without materializing the quadratic $N \times N$ attention matrix.
+  - **Multi-Head Attention (`MultiHeadAttention`)**: Scaled dot-product attention with projection weights and configurable heads.
 - **Polymorphic Micro-Kernel (`IInferenceSession`)**: Unified inference contract allowing seamless zero-downtime switching between Pure C# execution and native hardware accelerators (DirectML / ONNX Runtime).
 - **Zero Dependency Pure C# Runtime**: No native shared libraries (`onnxruntime.dll`, `libonnxruntime.so`) required. Runs anywhere .NET runs.
 - **Local LLM Streaming (`LocalLlmStreamClient`)**: High-throughput SSE token streaming client for Ollama, OpenAI, and local edge LLM endpoints.
