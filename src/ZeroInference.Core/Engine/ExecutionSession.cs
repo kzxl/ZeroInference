@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ZeroCompute.Core.Cpu;
 using ZeroInference.Core.Graph;
 using ZeroTensor.Core;
 
@@ -149,48 +150,47 @@ namespace ZeroInference.Core.Engine
 
             float alpha = node.Alpha;
 
-            for (int bi = 0; bi < batch; bi++)
+            Compute.For(batch * outChannels, item =>
             {
-                for (int oc = 0; oc < outChannels; oc++)
+                int bi = item / outChannels;
+                int oc = item % outChannels;
+                float biasVal = (b != null) ? b[oc] : 0.0f;
+
+                for (int oh = 0; oh < outH; oh++)
                 {
-                    float biasVal = (b != null) ? b[oc] : 0.0f;
+                    int ihBase = oh * stride - pad;
 
-                    for (int oh = 0; oh < outH; oh++)
+                    for (int ow = 0; ow < outW; ow++)
                     {
-                        int ihBase = oh * stride - pad;
+                        int iwBase = ow * stride - pad;
+                        float sum = biasVal;
 
-                        for (int ow = 0; ow < outW; ow++)
+                        for (int ic = 0; ic < inChannels; ic++)
                         {
-                            int iwBase = ow * stride - pad;
-                            float sum = biasVal;
-
-                            for (int ic = 0; ic < inChannels; ic++)
+                            for (int kh = 0; kh < kH; kh++)
                             {
-                                for (int kh = 0; kh < kH; kh++)
+                                int ih = ihBase + kh;
+                                if (ih < 0 || ih >= inH) continue;
+
+                                for (int kw = 0; kw < kW; kw++)
                                 {
-                                    int ih = ihBase + kh;
-                                    if (ih < 0 || ih >= inH) continue;
+                                    int iw = iwBase + kw;
+                                    if (iw < 0 || iw >= inW) continue;
 
-                                    for (int kw = 0; kw < kW; kw++)
-                                    {
-                                        int iw = iwBase + kw;
-                                        if (iw < 0 || iw >= inW) continue;
-
-                                        sum += x[bi, ic, ih, iw] * w[oc, ic, kh, kw];
-                                    }
+                                    sum += x[bi, ic, ih, iw] * w[oc, ic, kh, kw];
                                 }
                             }
-
-                            if (isFusedRelu)
-                            {
-                                sum = sum >= 0.0f ? sum : alpha * sum;
-                            }
-
-                            result[bi, oc, oh, ow] = sum;
                         }
+
+                        if (isFusedRelu)
+                        {
+                            sum = sum >= 0.0f ? sum : alpha * sum;
+                        }
+
+                        result[bi, oc, oh, ow] = sum;
                     }
                 }
-            }
+            });
 
             return result;
         }
@@ -209,24 +209,24 @@ namespace ZeroInference.Core.Engine
             var result = AllocateIntermediate(node.OutputName, outShape);
             float alpha = node.Alpha;
 
-            for (int bi = 0; bi < batch; bi++)
+            Compute.For(batch * outFeats, idx =>
             {
-                for (int of = 0; of < outFeats; of++)
+                int bi = idx / outFeats;
+                int of = idx % outFeats;
+
+                float sum = (b != null) ? b[of] : 0.0f;
+                for (int inf = 0; inf < inFeats; inf++)
                 {
-                    float sum = (b != null) ? b[of] : 0.0f;
-                    for (int inf = 0; inf < inFeats; inf++)
-                    {
-                        sum += x[bi, inf] * w[of, inf];
-                    }
-
-                    if (isFusedRelu)
-                    {
-                        sum = sum >= 0.0f ? sum : alpha * sum;
-                    }
-
-                    result[bi, of] = sum;
+                    sum += x[bi, inf] * w[of, inf];
                 }
-            }
+
+                if (isFusedRelu)
+                {
+                    sum = sum >= 0.0f ? sum : alpha * sum;
+                }
+
+                result[bi, of] = sum;
+            });
 
             return result;
         }
@@ -272,13 +272,7 @@ namespace ZeroInference.Core.Engine
             var x = _tensorSlots[node.InputNames[0]];
             var result = AllocateIntermediate(node.OutputName, x.Shape);
 
-            var inSpan = x.AsReadOnlySpan();
-            var outSpan = result.AsSpan();
-
-            for (int i = 0; i < inSpan.Length; i++)
-            {
-                outSpan[i] = op(inSpan[i]);
-            }
+            Compute.Map(x, result, op);
 
             return result;
         }
@@ -364,14 +358,7 @@ namespace ZeroInference.Core.Engine
             var b = _tensorSlots[node.InputNames[1]];
 
             var result = AllocateIntermediate(node.OutputName, a.Shape);
-            var aSpan = a.AsReadOnlySpan();
-            var bSpan = b.AsReadOnlySpan();
-            var resSpan = result.AsSpan();
-
-            for (int i = 0; i < aSpan.Length; i++)
-            {
-                resSpan[i] = aSpan[i] + bSpan[i];
-            }
+            Compute.Vector.Add(a, b, result);
 
             return result;
         }
